@@ -16,6 +16,7 @@ export default function Content() {
     .then(data => {
       setLikes(data.formSubmissions);
     })
+    .catch(error => refreshList());
   }
 
   const like = () => {
@@ -26,6 +27,7 @@ export default function Content() {
     .then(data => {
       refreshList();
     })
+    .catch(error => like());
   }
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function Content() {
       </div>}
       <Typography variant="h4">Liked Form Submissions</Typography>
 
-      <Typography variant="body1" sx={{fontStyle: 'italic', marginTop: 1}}>
+      <Typography component={'span'} variant="body1" sx={{fontStyle: 'italic', marginTop: 1}}>
         {likes && likes.map((element) => <Like data={element} key={element.id} />)}
       </Typography>
     </Box>
