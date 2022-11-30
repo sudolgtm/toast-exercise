@@ -36,10 +36,7 @@ export default function Content() {
     refreshList();
   },[])
 
-  const Like = props => 
-  <div>
-    {JSON.stringify(props.data)}
-  </div>
+  const Like = (props) => <div>{props.data.firstName + " " + props.data.lastName + " " + props.data.email}</div>;
 
   const toastMessage = toast ? toast.data.firstName + " " + toast.data.lastName + " " + toast.data.email : "";
 
@@ -48,8 +45,8 @@ export default function Content() {
       <Toast message={toastMessage} display={displayToast} handleClose={() => setDisplayToast(false)} handleLike={like} />
       <Typography variant="h4">Liked Form Submissions</Typography>
 
-      <Typography component={'span'} variant="body1" sx={{fontStyle: 'italic', marginTop: 1}}>
-        {likes && likes.map((element) => <Like data={element} key={element.id} />)}
+      <Typography component={'span'} variant="body1" sx={{fontStyle: 'italic', marginTop: 5}}>
+        {likes && likes.map((element) => <Like data={element.data} key={element.id} />)}
       </Typography>
     </Box>
   );
