@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Toast from './Toast';
+
 import { fetchLikedFormSubmissions, saveLikedFormSubmission, onMessage } from './service/mockServer';
 
 export default function Content() {
@@ -34,25 +36,16 @@ export default function Content() {
     refreshList();
   },[])
 
-  const Toast = () => 
-  <div>
-    {JSON.stringify(toast)}
-    <button onClick={(event) => like()}>
-      Like
-    </button>
-  </div>
-
   const Like = props => 
   <div>
     {JSON.stringify(props.data)}
   </div>
 
+  const toastMessage = toast ? toast.data.firstName + " " + toast.data.lastName + " " + toast.data.email : "";
+
   return (
     <Box sx={{marginTop: 3}}>
-      {displayToast && 
-      <div>
-        <Toast/>
-      </div>}
+      <Toast message={toastMessage} display={displayToast} handleClose={() => setDisplayToast(false)} handleLike={like} />
       <Typography variant="h4">Liked Form Submissions</Typography>
 
       <Typography component={'span'} variant="body1" sx={{fontStyle: 'italic', marginTop: 1}}>
