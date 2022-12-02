@@ -7,46 +7,59 @@ import { fetchLikedFormSubmissions, saveLikedFormSubmission, onMessage } from '.
 
 export default function Content() {
   const [likes, setLikes] = useState([]);
-  const [toast, setToast] = useState(false);
-  const [displayToast, setDisplayToast] = useState(false);
-
-  onMessage((data) => setToast(data));
-  onMessage((data) => setDisplayToast(true));
+  const [toasts, setToasts] = useState([]);
 
   const refreshList = () => {
     fetchLikedFormSubmissions()
     .then(data => {
       setLikes(data.formSubmissions);
     })
-    .catch(error => refreshList());
+    .catch(error => {
+      console.error(error);
+      refreshList();
+    })
+  }
+
+  const dismiss = () => {
+    setToasts(prev => {
+      prev.shift();
+      return [...prev];
+    })
   }
 
   const like = () => {
-    setDisplayToast(false);
-    let formSubmission = toast;
+    let formSubmission = toasts[0];
+    dismiss();
     formSubmission.data.liked = true;
     saveLikedFormSubmission(formSubmission)
     .then(data => {
       refreshList();
     })
-    .catch(error => like());
+    .catch(error => {
+      console.error(error);
+      like();
+    })
   }
 
   useEffect(() => {
     refreshList();
+    onMessage((data) => setToasts(prev => [...prev, data]));
   },[])
 
-  const Like = (props) => <div>{props.data.firstName + " " + props.data.lastName + " " + props.data.email}</div>;
+  const Like = (props) => {
+    const {firstName, lastName, email} = props.data;
+    return <div>{firstName + " " + lastName + " " + email}</div>;
+  }
 
-  const toastMessage = toast ? toast.data.firstName + " " + toast.data.lastName + " " + toast.data.email : "";
+  const toastMessage = toasts.length > 0 ? toasts[0].data.firstName + " " + toasts[0].data.lastName + " " + toasts[0].data.email : "";
 
   return (
     <Box sx={{marginTop: 3}}>
-      <Toast message={toastMessage} display={displayToast} handleClose={() => setDisplayToast(false)} handleLike={like} />
+      <Toast message={toastMessage} display={toasts.length > 0} handleClose={dismiss} handleLike={like} />
       <Typography variant="h4">Liked Form Submissions</Typography>
 
       <Typography component={'span'} variant="body1" sx={{fontStyle: 'italic', marginTop: 5}}>
-        {likes && likes.map((element) => <Like data={element.data} key={element.id} />)}
+        {likes.map((element) => <Like data={element.data} key={element.id} />)}
       </Typography>
     </Box>
   );

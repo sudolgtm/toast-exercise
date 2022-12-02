@@ -6,6 +6,14 @@ import CloseIcon from '@mui/icons-material/Close';
 
 export default function Toast(props) {
 
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+    return;
+    }
+
+    props.handleClose();
+  };
+
   const action = (
     <React.Fragment>
       <Button color="secondary" size="small" onClick={props.handleLike}>
@@ -15,7 +23,7 @@ export default function Toast(props) {
         size="small"
         aria-label="close"
         color="inherit"
-        onClick={props.handleClose}
+        onClick={handleClose}
       >
         <CloseIcon fontSize="small" />
       </IconButton>
@@ -26,7 +34,7 @@ export default function Toast(props) {
     <div>
       <Snackbar
         open={props.display}
-        onClose={props.handleClose}
+        onClose={handleClose}
         message={props.message}
         action={action}
       />
