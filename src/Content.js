@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Toast from './Toast';
@@ -9,7 +9,7 @@ export default function Content() {
   const [likes, setLikes] = useState([]);
   const [toasts, setToasts] = useState([]);
 
-  const refreshList = () => {
+  const refreshList = useCallback(() => {
     fetchLikedFormSubmissions()
     .then(data => {
       setLikes(data.formSubmissions);
@@ -18,44 +18,47 @@ export default function Content() {
       console.error(error);
       refreshList();
     })
-  }
+  },[])
 
-  const dismiss = () => {
+  const dismissToast = () => {
     setToasts(prev => {
       prev.shift();
       return [...prev];
     })
   }
 
-  const like = () => {
+  const likeToast = () => {
     let formSubmission = toasts[0];
-    dismiss();
-    formSubmission.data.liked = true;
-    saveLikedFormSubmission(formSubmission)
-    .then(data => {
-      refreshList();
-    })
-    .catch(error => {
-      console.error(error);
-      like();
-    })
+    if (formSubmission !== undefined && !likes.includes(formSubmission)) {
+      dismissToast();
+      formSubmission.data.liked = true;
+      setLikes( prev => [...prev, formSubmission])
+      saveLikedFormSubmission(formSubmission)
+      .then(data => {
+        refreshList();
+      })
+      .catch(error => {
+        console.error(error);
+        likeToast();
+      })
+    }
   }
 
   useEffect(() => {
     refreshList();
-    onMessage((data) => setToasts(prev => [...prev, data]));
-  },[])
+    onMessage((data) => setToasts( prev => [...prev, data]));
+  },[refreshList])
 
   const Like = (props) => {
     const {firstName, lastName, email} = props.data;
     return <div>{firstName + " " + lastName + " " + email}</div>;
   }
 
-  const toastMessage = toasts.length > 0 ? toasts[0].data.firstName + " " + toasts[0].data.lastName + " " + toasts[0].data.email : "";
+  const toastMessage = useMemo(() => toasts.length > 0 ? toasts[0].data.firstName + " " + toasts[0].data.lastName + "\n" + toasts[0].data.email : "", [toasts])
 
   return (
     <Box sx={{marginTop: 3}}>
-      <Toast message={toastMessage} display={toasts.length > 0} handleClose={dismiss} handleLike={like} />
+      <Toast message={toastMessage} display={toasts.length > 0} handleClose={dismissToast} handleLike={likeToast} />
       <Typography variant="h4">Liked Form Submissions</Typography>
 
       <Typography component={'span'} variant="body1" sx={{fontStyle: 'italic', marginTop: 5}}>

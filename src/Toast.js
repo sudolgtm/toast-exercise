@@ -5,18 +5,26 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
 export default function Toast(props) {
+  const [disableButton, setDisableButton] = React.useState(false);
 
-  const handleClose = (event, reason) => {
+  const handleClose = async (event, reason) => {
     if (reason === 'clickaway') {
-    return;
+      return;
     }
-
-    props.handleClose();
+    setDisableButton(true);
+    await props.handleClose();
+    setDisableButton(false);
   };
 
+  const handleLike = async () => {
+    setDisableButton(true);
+    await props.handleLike();
+    setDisableButton(false);
+  };
+// set width
   const action = (
     <React.Fragment>
-      <Button color="secondary" size="small" onClick={props.handleLike}>
+      <Button color="secondary" size="small" onClick={handleLike} disabled={disableButton}>
         Like
       </Button>
       <IconButton
@@ -33,6 +41,7 @@ export default function Toast(props) {
   return (
     <div>
       <Snackbar
+        sx={{width: 400, minWidth: 400}}
         open={props.display}
         onClose={handleClose}
         message={props.message}
