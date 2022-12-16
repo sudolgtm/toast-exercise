@@ -12,13 +12,15 @@ export default function Content() {
   const refreshList = useCallback(() => {
     fetchLikedFormSubmissions()
     .then(data => {
-      setLikes(data.formSubmissions);
+      if (JSON.stringify(data.formSubmissions) !== JSON.stringify(likes)) {
+        setLikes(data.formSubmissions);
+      }
     })
     .catch(error => {
       console.error(error);
       refreshList();
     })
-  },[])
+  },[likes])
 
   const dismissToast = () => {
     setToasts(prev => {
@@ -47,7 +49,7 @@ export default function Content() {
   useEffect(() => {
     refreshList();
     onMessage((data) => setToasts( prev => [...prev, data]));
-  },[refreshList])
+  },[])
 
   const Like = (props) => {
     const {firstName, lastName, email} = props.data;

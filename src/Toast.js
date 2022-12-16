@@ -41,7 +41,6 @@ export default function Toast(props) {
   return (
     <div>
       <Snackbar
-        sx={{width: 400, minWidth: 400}}
         open={props.display}
         onClose={handleClose}
         message={props.message}
