@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import Toast from './Toast';
 
 import { fetchLikedFormSubmissions, saveLikedFormSubmission, onMessage } from './service/mockServer';
+import retry from './service/retryAPI';
 
 export default function Content() {
   const [likes, setLikes] = useState([]);
@@ -18,12 +19,12 @@ export default function Content() {
     })
     .catch(error => {
       console.error(error);
-      refreshList();
+      retry(refreshList);
     })
   },[likes])
 
   const dismissToast = () => {
-    setToasts(prev => {
+    setToasts( prev => {
       prev.shift();
       return [...prev];
     })
@@ -41,7 +42,7 @@ export default function Content() {
       })
       .catch(error => {
         console.error(error);
-        likeToast();
+        retry(likeToast);
       })
     }
   }
