@@ -2,18 +2,23 @@ const waitFor = (milliseconds) => {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-const retryWithBackoff = async (request, retries) => {
+const retryWithBackoff = async (request, args, retries, maxRetries) => {
     try {
-        const timeToWait = 2 ** retries * 100;
-        await waitFor(timeToWait);
-        return await request();
+        if (retries > 0) {
+            const timeToWait = (2 ** retries) * 100;
+            await waitFor(timeToWait);
+        }
+        return await request(args);
     } catch (e) {
         console.error(e);
-        return await retryWithBackoff(request, retries + 1);
+        if (retries < maxRetries) {
+            return await retryWithBackoff(request, args, retries + 1, maxRetries);
+        } else throw e;
     }
 }
 
-export default function retry(request) {
-    let retries = 1;
-    retryWithBackoff(request, retries);
+export default function withRetry(request, args) {
+    let retries = 0;
+    let maxRetries = 5;
+    return retryWithBackoff(request, args, retries, maxRetries);
 };

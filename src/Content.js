@@ -4,27 +4,23 @@ import Typography from '@mui/material/Typography';
 import Toast from './Toast';
 
 import { fetchLikedFormSubmissions, saveLikedFormSubmission, onMessage } from './service/mockServer';
-import retry from './service/retryAPI';
+import withRetry from './service/retryAPI';
 
 export default function Content() {
   const [likes, setLikes] = useState([]);
   const [toasts, setToasts] = useState([]);
 
   const refreshList = useCallback(() => {
-    fetchLikedFormSubmissions()
+    withRetry(fetchLikedFormSubmissions)
     .then(data => {
       if (JSON.stringify(data.formSubmissions) !== JSON.stringify(likes)) {
         setLikes(data.formSubmissions);
       }
     })
-    .catch(error => {
-      console.error(error);
-      retry(refreshList);
-    })
   },[likes])
 
   const dismissToast = () => {
-    setToasts( prev => {
+    setToasts(prev => {
       prev.shift();
       return [...prev];
     })
@@ -35,29 +31,25 @@ export default function Content() {
     if (formSubmission !== undefined && !likes.includes(formSubmission)) {
       dismissToast();
       formSubmission.data.liked = true;
-      setLikes( prev => [...prev, formSubmission])
-      saveLikedFormSubmission(formSubmission)
+      setLikes(prev => [...prev, formSubmission])
+      withRetry(saveLikedFormSubmission, formSubmission)
       .then(data => {
         refreshList();
-      })
-      .catch(error => {
-        console.error(error);
-        retry(likeToast);
       })
     }
   }
 
+  const toastMessage = useMemo(() => toasts.length > 0 ? toasts[0].data.firstName + " " + toasts[0].data.lastName + " " + toasts[0].data.email : "", [toasts])
+
   useEffect(() => {
     refreshList();
-    onMessage((data) => setToasts( prev => [...prev, data]));
+    onMessage((data) => setToasts(prev => [...prev, data]));
   },[])
 
   const Like = (props) => {
     const {firstName, lastName, email} = props.data;
     return <div>{firstName + " " + lastName + " " + email}</div>;
   }
-
-  const toastMessage = useMemo(() => toasts.length > 0 ? toasts[0].data.firstName + " " + toasts[0].data.lastName + "\n" + toasts[0].data.email : "", [toasts])
 
   return (
     <Box sx={{marginTop: 3}}>
